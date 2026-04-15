@@ -1,0 +1,481 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String     @id @default(auto()) @map("_id") @db.ObjectId
+  fullName           String     @default("")
+  email              String     @unique
+  fcmToken           String?    @default("")
+  profileImage       String?    @default("")
+  phoneNumber        String?    @default("")
+  address            String?    @default("")
+  expirationOtp      DateTime?
+  otp                Int?
+  password           String
+  isApproved         Boolean    @default(false)
+  role               UserRole   @default(USER)
+  status             UserStatus @default(ACTIVE)
+  isAllowed          Boolean    @default(false)
+  isDeleted          Boolean    @default(false)
+  subscriptionEndsAt DateTime?
+
+  // Paystack fields
+  // paystackSubaccountUrl     String? 
+  // paystackSubaccountCode    String? 
+  // paystackCustomerCode      String? 
+  // paystackRecipientCode     String?
+
+  // PayFast fields
+  payfastCustomerId String? // PayFast customer identifier
+  payfastMerchantId String? // For sub-merchants (professionals)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  businesses          Business[]           @relation("UserBusinesses")
+  favorites           Favorite[]           @relation("UserFavorites")
+  favoriteSpecialists FavoriteSpecialist[] @relation("UserFavoriteSpecialists")
+  bookings            Booking[]            @relation("UserBookings")
+  reviews             Review[]             @relation("UserReviews")
+  subscriptionOffer   UserSubscription[]   @relation("UserRelation")
+  adminSubscription   SubscriptionOffer[]  @relation("UserRelation")
+  notifications       Notification[]       @relation("UserRelation")
+  searchHistory       SearchHistory[]      @relation("UserSearchHistory")
+  payouts             Payout[]             @relation("ProfessionalPayouts")
+
+  @@map("users")
+}
+
+model Category {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  image     String?  @default("")
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subCategories SubCategory[] @relation("CategorySubCategories")
+  businesses    Business[]    @relation("CategoryBusinesses")
+
+  @@map("categories")
+}
+
+model SubCategory {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String   @default("")
+  categoryId String   @db.ObjectId
+  isDeleted  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  category   Category   @relation("CategorySubCategories", fields: [categoryId], references: [id])
+  businesses Business[] @relation("SubCategoryBusinesses")
+
+  @@map("subcategories")
+}
+
+model SearchHistory {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  searchTerm String   @default("")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation("UserSearchHistory", fields: [userId], references: [id])
+
+  @@map("search_history")
+}
+
+model Business {
+  id            String             @id @default(auto()) @map("_id") @db.ObjectId
+  name          String             @default("")
+  about         String?            @default("")
+  contactNumber String?            @default("")
+  image         String?            @default("")
+  categoryId    String             @db.ObjectId
+  subCategoryId String             @db.ObjectId
+  latitude      Float?             @default(0)
+  longitude     Float?             @default(0)
+  address       String?            @default("")
+  openingHours  String             @default("")
+  closingHours  String             @default("")
+  opining       OpenningsMap[]     @relation("BusinessOpennings")
+  status        BusinessStatus     @default(ACTIVE)
+  openStatus    BusinessTimeStatus @default(OPEN)
+  userId        String             @db.ObjectId
+  isDeleted     Boolean            @default(false)
+  overallRating Int                @default(0)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  category    Category     @relation("CategoryBusinesses", fields: [categoryId], references: [id])
+  subCategory SubCategory  @relation("SubCategoryBusinesses", fields: [subCategoryId], references: [id])
+  user        User         @relation("UserBusinesses", fields: [userId], references: [id])
+  services    Service[]    @relation("BusinessServices")
+  specialists Specialist[] @relation("BusinessSpecialists")
+  bookings    Booking[]    @relation("BusinessBookings")
+  reviews     Review[]     @relation("BusinessReviews")
+  portfolios  Portfolio[]  @relation("BusinessPortfolios")
+  favorites   Favorite[]   @relation("BusinessFavorites")
+
+  @@map("businesses")
+}
+
+model OpenningsMap {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  businessId   String   @db.ObjectId
+  dayName      String
+  openingHours String
+  closingHours String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  business Business @relation("BusinessOpennings", fields: [businessId], references: [id])
+
+  @@map("openningsMaps")
+}
+
+model Service {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  description    String?  @default("")
+  price          Float
+  image          String   @default("")
+  isActive       Boolean  @default(true)
+  isOffered      Boolean  @default(false)
+  offeredPercent Int?     @default(0)
+  businessId     String   @db.ObjectId
+  isDeleted      Boolean  @default(false)
+  interval       Int?     @default(30) // in minutes
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  business    Business     @relation("BusinessServices", fields: [businessId], references: [id])
+  specialists Specialist[] @relation("ServiceSpecialists")
+  bookings    Booking[]    @relation("ServiceBookings")
+  timeSlots   TimeSlot[]   @relation("ServiceTimeSlots")
+
+  @@map("services")
+}
+
+model Specialist {
+  id             String     @id @default(auto()) @map("_id") @db.ObjectId
+  businessId     String     @db.ObjectId
+  serviceId      String     @db.ObjectId
+  fullName       String     @default("")
+  phoneNumber    String?    @default("")
+  profileImage   String?    @default("")
+  specialization String     @default("")
+  status         UserStatus @default(ACTIVE)
+  experience     Int?       @default(0)
+  totalRating    Int?       @default(0)
+  totalWorks     Int?       @default(0)
+  isAvailable    Boolean    @default(true)
+  isDeleted      Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  business   Business             @relation("BusinessSpecialists", fields: [businessId], references: [id])
+  service    Service              @relation("ServiceSpecialists", fields: [serviceId], references: [id])
+  bookings   Booking[]            @relation("SpecialistBookings")
+  reviews    Review[]             @relation("SpecialistReviews")
+  favorites  FavoriteSpecialist[] @relation("ServiceFavoriteSpecialists")
+  portfolios Portfolio[]          @relation("SpecialistPortfolios")
+
+  @@map("specialists")
+}
+
+model Portfolio {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  title        String   @default("")
+  specialistId String   @db.ObjectId
+  image        String   @default("")
+  businessId   String   @db.ObjectId
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  specialist Specialist @relation("SpecialistPortfolios", fields: [specialistId], references: [id])
+  business   Business   @relation("BusinessPortfolios", fields: [businessId], references: [id])
+
+  @@map("portfolios")
+}
+
+model Favorite {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  businessId String   @db.ObjectId
+  isFavorite Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user     User     @relation("UserFavorites", fields: [userId], references: [id])
+  business Business @relation("BusinessFavorites", fields: [businessId], references: [id])
+
+  @@map("favorites")
+}
+
+model FavoriteSpecialist {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  specialistId String   @db.ObjectId
+  isFavorite   Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user       User       @relation("UserFavoriteSpecialists", fields: [userId], references: [id])
+  specialist Specialist @relation("ServiceFavoriteSpecialists", fields: [specialistId], references: [id])
+
+  @@map("favoriteSpecialists")
+}
+
+model Booking {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String        @db.ObjectId
+  businessId    String        @db.ObjectId
+  serviceId     String        @db.ObjectId
+  specialistId  String        @db.ObjectId
+  bookingDate   DateTime
+  timeSlot      TimeSlot[]    @relation("BookingTimeSlots")
+  totalPrice    Float
+  paymentStatus Boolean       @default(true)
+  status        UserStatus    @default(ACTIVE)
+  bookingStatus bookingStatus @default(PENDING)
+  isDeleted     Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user       User       @relation("UserBookings", fields: [userId], references: [id])
+  business   Business   @relation("BusinessBookings", fields: [businessId], references: [id])
+  service    Service    @relation("ServiceBookings", fields: [serviceId], references: [id])
+  specialist Specialist @relation("SpecialistBookings", fields: [specialistId], references: [id])
+  payment    Payment?   @relation("BookingPayment")
+  payout     Payout?    @relation("BookingPayout")
+  refunds    Refund[]   @relation("BookingRefunds")
+
+  @@map("bookings")
+}
+
+model TimeSlot {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  bookingId String   @db.ObjectId
+  serviceId String   @db.ObjectId
+  startTime DateTime
+  endTime   DateTime
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  booking Booking? @relation("BookingTimeSlots", fields: [bookingId], references: [id])
+  service Service? @relation("ServiceTimeSlots", fields: [serviceId], references: [id])
+
+  @@map("timeslots")
+}
+
+model Review {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  specialistId String   @db.ObjectId
+  businessId   String   @db.ObjectId
+  rating       Int
+  comment      String?  @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user       User        @relation("UserReviews", fields: [userId], references: [id])
+  specialist Specialist? @relation("SpecialistReviews", fields: [specialistId], references: [id])
+  business   Business?   @relation("BusinessReviews", fields: [businessId], references: [id])
+
+  @@map("reviews")
+}
+
+model SubscriptionOffer {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  price       Float
+  duration    Int
+  platformFee Float
+  features    Json // for storing feature flags as key-value
+  status      UserStatus @default(ACTIVE)
+  createdBy   String     @db.ObjectId
+  isDeleted   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  creator          User               @relation("UserRelation", fields: [createdBy], references: [id])
+  UserSubscription UserSubscription[]
+
+  @@map("subscription_offers")
+}
+
+model UserSubscription {
+  id                  String             @id @default(auto()) @map("_id") @db.ObjectId
+  userId              String             @db.ObjectId
+  subscriptionOfferId String             @db.ObjectId
+  startDate           DateTime           @default(now())
+  endDate             DateTime           @default(now())
+  paymentId           String             @default("")
+  paymentStatus       PaymentStatus      @default(PENDING)
+  status              SubscriptionStatus @default(PENDING)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  user              User              @relation("UserRelation", fields: [userId], references: [id])
+  subscriptionOffer SubscriptionOffer @relation(fields: [subscriptionOfferId], references: [id])
+
+  @@map("user_subscriptions")
+}
+
+model Notification {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  title     String
+  body      String
+  data      Json?  
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation("UserRelation", fields: [userId], references: [id])
+
+  @@map("notifications")
+}
+
+// Updated Payment model with PayFast support
+model Payment {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  paymentId     String // Stores Paystack transaction reference or PayFast payment ID
+  paymentAmount Float
+  bookingId     String   @unique @db.ObjectId
+  paymentDate   DateTime @default(now())
+
+  // Paystack fields
+  // paystackCustomerCodeProvider  String?
+  // paystackSubaccountCodeReceiver String? 
+  // authorizationCode             String?       // Paystack authorization code for pre-authorized payments
+
+  // PayFast fields
+  payfastSignature  String? // PayFast signature for verification
+  payfastMPaymentId String? // PayFast merchant payment ID
+
+  // Common fields
+  paymentMethod String        @default("PAYSTACK") // PAYSTACK or PAYFAST
+  status        PaymentStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  booking Booking  @relation("BookingPayment", fields: [bookingId], references: [id])
+  refunds Refund[] @relation("PaymentRefunds")
+
+  @@map("payments")
+}
+
+// New Payout model for tracking professional payouts
+model Payout {
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  professionalId  String       @db.ObjectId
+  bookingId       String       @unique @db.ObjectId
+  amount          Float // Amount to be paid to professional
+  adminCommission Float // Commission retained by platform
+  status          PayoutStatus @default(PENDING)
+  paymentMethod   String // PAYSTACK or PAYFAST
+  // paystackTransferCode String? // Paystack transfer reference
+  payfastPayoutId String? // PayFast payout reference
+  processedAt     DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  professional User    @relation("ProfessionalPayouts", fields: [professionalId], references: [id])
+  booking      Booking @relation("BookingPayout", fields: [bookingId], references: [id])
+
+  @@map("payouts")
+}
+
+// New Refund model for tracking refunds
+model Refund {
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  paymentId       String       @db.ObjectId
+  bookingId       String       @db.ObjectId
+  amount          Float // Refund amount
+  reason          String? // Reason for refund
+  status          RefundStatus @default(PENDING)
+  refundMethod    String // PAYSTACK or PAYFAST
+  // paystackRefundCode String? // Paystack refund reference
+  payfastRefundId String? // PayFast refund reference
+  processedAt     DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  payment Payment @relation("PaymentRefunds", fields: [paymentId], references: [id])
+  booking Booking @relation("BookingRefunds", fields: [bookingId], references: [id])
+
+  @@map("refunds")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  PROFESSIONAL
+  USER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum BusinessStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum BusinessTimeStatus {
+  OPEN
+  CLOSED
+}
+
+enum bookingStatus {
+  PENDING
+  COMPLETE_REQUEST
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REQUIRES_CAPTURE
+  DEACTIVATED
+  REFUNDED
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+}
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum RefundStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}

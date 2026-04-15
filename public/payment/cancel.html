@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Payment Cancelled</title>
+  <style>
+    :root { --bg:#fff7f5; --card:#fff; --accent:#dc2626; --muted:#6b7280; --maxw:720px; }
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;background:linear-gradient(180deg,#fff7f5 0,#fff 100%);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;color:#111827}
+    .card{width:100%;max-width:var(--maxw);background:var(--card);border-radius:12px;padding:36px;box-shadow:0 6px 24px rgba(2,6,23,0.06);text-align:center}
+    .icon{font-size:44px;color:var(--accent);margin-bottom:12px}
+    h1{margin:0 0 8px;font-size:30px}
+    p.lead{margin:0 0 18px;color:var(--muted)}
+    .meta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:16px 0}
+    .meta .item{padding:10px 14px;background:#fff5f5;border:1px solid #fff0f0;border-radius:8px;min-width:160px;text-align:left}
+    .meta .k{font-size:12px;color:#9ca3af;margin-bottom:6px}
+    .meta .v{font-weight:600}
+    .actions{display:flex;gap:12px;justify-content:center;margin-top:14px}
+    .btn{padding:10px 14px;border-radius:10px;font-weight:600;cursor:pointer;border:0; text-decoration:none; display:inline-flex;align-items:center;justify-content:center}
+    .btn-retry{background:#111827;color:#fff}
+    .btn-home{background:transparent;border:1px solid #e6e6e6;color:#374151}
+    footer{margin-top:14px;color:var(--muted);font-size:13px}
+    @media (max-width:520px){.meta{flex-direction:column;align-items:stretch}.meta .item{min-width:auto}}
+  </style>
+</head>
+<body>
+  <main class="card" role="main" aria-labelledby="title">
+    <div class="icon" aria-hidden="true">✖</div>
+    <h1 id="title">Payment cancelled</h1>
+    <p class="lead">We couldn't complete your payment. You can try again or contact support if the problem continues.</p>
+
+    <div class="meta" id="meta">
+      <div class="item">
+        <div class="k">Subscription / Merchant payment id</div>
+        <div class="v" id="m_payment_id">—</div>
+      </div>
+      <div class="item">
+        <div class="k">Reason (if provided)</div>
+        <div class="v" id="reason">—</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <a id="btnRetry" class="btn btn-retry" href="#">Try again</a>
+      <a id="btnHome" class="btn btn-home" href="/">Return to home</a>
+    </div>
+
+    <footer>
+      Need help? <a href="mailto:support@yourdomain.com">Contact support</a>.
+    </footer>
+  </main>
+
+  <script>
+    (function(){
+      // Parse query string and decode '+' as space (for form urlencoded redirects)
+      function parseQS() {
+        const qs = window.location.search.replace(/^\?/, '');
+        if (!qs) return {};
+        return qs.split('&').reduce((acc, pair) => {
+          const [k, v = ''] = pair.split('=');
+          try {
+            const key = decodeURIComponent(k);
+            const value = decodeURIComponent(v.replace(/\+/g, '%20'));
+            acc[key] = value;
+          } catch (e) {
+            acc[k] = v;
+          }
+          return acc;
+        }, {});
+      }
+
+      const params = parseQS();
+
+      // Fallback names commonly returned by gateways
+      const m_payment_id = params.m_payment_id || params.m_paymentid || params.m_payment || '—';
+      const reason = params.reason || params.cancel_reason || params.message || params.status_reason || 'User cancelled the payment or closed the window.';
+
+      // Safe DOM updates
+      function setText(id, value){
+        const el = document.getElementById(id);
+        if (el) el.textContent = value ?? '—';
+      }
+
+      setText('m_payment_id', m_payment_id);
+      setText('reason', reason);
+
+      // Retry button should link back to your frontend checkout flow; adapt as needed
+      const retry = document.getElementById('btnRetry');
+      if (retry) {
+        // Example: send user back to a checkout page with the original m_payment_id if available
+        retry.href = '/subscriptions/checkout' + (m_payment_id && m_payment_id !== '—' ? '?m_payment_id=' + encodeURIComponent(m_payment_id) : '');
+      }
+
+      // If debug flag present show details in console (avoid printing sensitive info on page)
+      if (params.debug === 'true') {
+        console.info('payment cancel params:', params);
+      }
+    })();
+  </script>
+</body>
+</html>
