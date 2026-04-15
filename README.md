@@ -377,7 +377,7 @@ ISC
 
 ## 📧 Support
 
-For support or questions, please contact: hello@timelifyapp.com
+For support or questions, please contact: mdhasan26096@gmail.com
 
 ---
 
