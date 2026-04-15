@@ -1,4 +1,4 @@
-# Timelify - Booking Management System
+# Booking Management System
 
 A comprehensive **booking and appointment management platform** that connects service specialists with customers. Built with modern technologies to provide seamless scheduling, payments, notifications, and user management.
 
