@@ -2,16 +2,19 @@
 import express from 'express';
 import { NotificationController } from './notification.controller';
 import auth from '../../middlewares/auth';
+import validateRequest from '../../middlewares/validateRequest';
+import { notificationValidation } from './notification.validation';
 import { UserRole } from '@prisma/client';
 
 const router = express.Router();
 
-router.post('/send', NotificationController.sendNotificationToUser);
+router.post('/send', validateRequest(notificationValidation.createSchema), NotificationController.sendNotificationToUser);
 
 
 router.post(
     '/send-group',
     auth(UserRole.ADMIN),
+    validateRequest(notificationValidation.createGroupSchema),
     NotificationController.sendNotificationToUserGroup,
 )
 

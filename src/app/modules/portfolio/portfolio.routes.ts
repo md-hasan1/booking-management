@@ -11,7 +11,7 @@ const router = express.Router();
 router.post(
 '/',
 auth(UserRole.PROFESSIONAL),
-//validateRequest(portfolioValidation.createSchema),
+validateRequest(portfolioValidation.createSchema),
 fileUploader.uploadSingle,
 portfolioController.createPortfolio,
 );
@@ -23,7 +23,7 @@ router.get('/:id', auth(), portfolioController.getPortfolioById);
 router.put(
 '/:id',
 auth(UserRole.PROFESSIONAL),
-//validateRequest(portfolioValidation.updateSchema),
+validateRequest(portfolioValidation.updateSchema),
 fileUploader.uploadSingle,
 portfolioController.updatePortfolio,
 );

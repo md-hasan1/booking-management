@@ -11,7 +11,7 @@ const router = express.Router();
 // *!register user
 router.post(
   "/register",
-  // validateRequest(UserValidation.CreateUserValidationSchema),
+  validateRequest(UserValidation.CreateUserValidationSchema),
   userController.createUser
 );
 // *!get all  user
@@ -25,8 +25,7 @@ router.get(
 // *!profile user
 router.put(
   "/profile",
-  // validateRequest(UserValidation.userUpdateSchema),
-
+  validateRequest(UserValidation.userUpdateSchema),
   auth(),
   fileUploader.uploadSingle,
   userController.updateProfile

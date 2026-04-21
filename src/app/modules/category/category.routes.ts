@@ -12,7 +12,7 @@ router.post(
 '/',
 auth(UserRole.ADMIN),
 fileUploader.uploadSingle,
-//validateRequest(categoryValidation.createSchema),
+validateRequest(categoryValidation.createSchema),
 categoryController.createCategory,
 );
 
@@ -24,7 +24,7 @@ router.put(
 '/:id',
 auth(UserRole.ADMIN),
 fileUploader.uploadSingle,
-//validateRequest(categoryValidation.updateSchema),
+validateRequest(categoryValidation.updateSchema),
 categoryController.updateCategory,
 );
 

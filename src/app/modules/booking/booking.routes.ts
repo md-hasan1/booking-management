@@ -10,7 +10,7 @@ const router = express.Router();
 router.post(
 '/',
 auth(),
-//validateRequest(bookingValidation.createSchema),
+validateRequest(bookingValidation.createSchema),
 bookingController.createBooking,
 );
 
@@ -33,13 +33,14 @@ router.get('/:id', auth(), bookingController.getBookingById);
 router.put(
 '/:id',
 auth(),
-//validateRequest(bookingValidation.updateSchema),
+validateRequest(bookingValidation.updateSchema),
 bookingController.updateBooking,
 );
 
 router.patch(
 '/status/:id',
 auth(),
+validateRequest(bookingValidation.statusChangeSchema),
 bookingController.bookingStatusChange,
 );
 

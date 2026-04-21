@@ -1,20 +1,11 @@
 import { z } from 'zod';
 
 const createSchema = z.object({
-
-    name: z.string().min(1, 'Name is required'),
-    description: z.string().optional(),
-
-});
-
-const updateSchema = z.object({
-
-    name: z.string().optional(),
-    description: z.string().optional(),
-
+  params: z.object({
+    businessId: z.string().min(1, 'Business ID is required'),
+  }),
 });
 
 export const favoriteValidation = {
 createSchema,
-updateSchema,
 };

@@ -1,13 +1,15 @@
 import express from 'express';
 import auth from '../../middlewares/auth';
+import validateRequest from '../../middlewares/validateRequest';
 import { searchHistoryController } from './searchHistory.controller';
+import { searchHistoryValidation } from './searchHistory.validation';
 
 const router = express.Router();
 
 router.post(
 '/',
 auth(),
-//validateRequest(searchHistoryValidation.createSchema),
+validateRequest(searchHistoryValidation.createSchema),
 searchHistoryController.createSearchHistory,
 );
 

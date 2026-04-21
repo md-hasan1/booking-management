@@ -11,7 +11,7 @@ const router = express.Router();
 router.post(
 '/',
 auth(UserRole.PROFESSIONAL),
-//validateRequest(serviceValidation.createSchema),
+validateRequest(serviceValidation.createSchema),
 fileUploader.uploadSingle,
 serviceController.createService,
 );
@@ -23,7 +23,7 @@ router.get('/:id', auth(), serviceController.getServiceById);
 router.put(
 '/:id',
 auth(UserRole.PROFESSIONAL, UserRole.ADMIN),
-//validateRequest(serviceValidation.updateSchema),
+validateRequest(serviceValidation.updateSchema),
 fileUploader.uploadSingle,
 serviceController.updateService,
 );

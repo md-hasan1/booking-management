@@ -1,6 +1,8 @@
 import express from 'express';
 import { paymentController } from './payment.controller';
 import auth from '../../middlewares/auth';
+import validateRequest from '../../middlewares/validateRequest';
+import { paymentValidation } from './payment.validation';
 
 const router = express.Router();
 
@@ -8,6 +10,7 @@ const router = express.Router();
 router.post(
   '/initialize',
   auth(),
+  validateRequest(paymentValidation.initializePayment),
   paymentController.initializePayment
 );
 

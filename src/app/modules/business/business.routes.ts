@@ -12,7 +12,7 @@ router.post(
 '/create',
 auth(),
 fileUploader.uploadSingle,
-//validateRequest(businessValidation.createSchema),
+validateRequest(businessValidation.createSchema),
 businessController.createBusiness,
 );
 
@@ -33,7 +33,7 @@ router.put(
     '/:id',
     auth(),
     fileUploader.uploadSingle,
-    //validateRequest(businessValidation.updateSchema),
+    validateRequest(businessValidation.updateSchema),
     businessController.updateBusiness,
 );
 

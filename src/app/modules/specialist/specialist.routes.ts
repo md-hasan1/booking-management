@@ -11,7 +11,7 @@ const router = express.Router();
 router.post(
 '/',
 auth(UserRole.PROFESSIONAL),
-//validateRequest(specialistValidation.createSchema),
+validateRequest(specialistValidation.createSchema),
 fileUploader.uploadSingle,
 specialistController.createSpecialist,
 );
@@ -27,7 +27,7 @@ router.get('/:id', auth(UserRole.PROFESSIONAL, UserRole.ADMIN), specialistContro
 router.put(
 '/:id',
 auth(UserRole.PROFESSIONAL, UserRole.ADMIN),
-//validateRequest(specialistValidation.updateSchema),
+validateRequest(specialistValidation.updateSchema),
 fileUploader.uploadSingle,
 specialistController.updateSpecialist,
 );

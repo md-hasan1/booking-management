@@ -10,6 +10,7 @@ const router = express.Router();
 router.post(
 '/:specialistId',
 auth(UserRole.USER),
+validateRequest(favoriteSpecialistValidation.createSchema),
 favoriteSpecialistController.createFavoriteSpecialist,
 );
 

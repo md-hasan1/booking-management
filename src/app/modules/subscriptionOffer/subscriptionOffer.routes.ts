@@ -10,6 +10,7 @@ const router = express.Router();
 router.post(
 '/',
 auth(UserRole.ADMIN),
+validateRequest(subscriptionOfferValidation.createSchema),
 subscriptionOfferController.createSubscriptionOffer,
 );
 
@@ -19,8 +20,8 @@ router.get('/:id', auth(), subscriptionOfferController.getSubscriptionOfferById)
 
 router.put(
 '/:id',
-//validateRequest(subscriptionOfferValidation.updateSchema),
 auth(UserRole.ADMIN),
+validateRequest(subscriptionOfferValidation.updateSchema),
 subscriptionOfferController.updateSubscriptionOffer,
 );
 

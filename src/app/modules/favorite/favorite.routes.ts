@@ -10,6 +10,7 @@ const router = express.Router();
 router.post(
 '/:businessId',
 auth(UserRole.USER),
+validateRequest(favoriteValidation.createSchema),
 favoriteController.createFavorite,
 );
 
